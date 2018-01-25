@@ -1,21 +1,17 @@
 #!/usr/bin/env bash
 
-set -x
+set -xe
 
-export PYTORCH_BUILD_VERSION=0.3.1
-export PYTORCH_BUILD_NUMBER=1
-export PYTORCH_BINARY_BUILD=1
-export TH_BINARY_BUILD=1
 export NO_CUDA=1
 export CMAKE_LIBRARY_PATH="/opt/intel/lib:/lib:$CMAKE_LIBRARY_PATH"
 
 WHEELHOUSE_DIR="wheelhousecpu"
 
-# wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-# rpm -ivh epel-release-6-8.noarch.rpm
-# yum --enablerepo=epel install -y cmake3
-# rm /usr/bin/cmake
-# ln -s /usr/bin/cmake3 /usr/bin/cmake
+yum install -y epel-release
+yum install -y cmake3
+yum remove -y cmake
+
+ln -s /usr/bin/cmake3 /usr/bin/cmake
 
 rm -rf /usr/local/cuda*
 rm -rf /opt/python/cpython-2.6.9-ucs2  /opt/python/cpython-2.6.9-ucs4
@@ -27,11 +23,8 @@ ls /opt/python
 # # Compile wheels
 # #######################################################
 # clone pytorch source code
-git clone https://github.com/pytorch/pytorch /pytorch
-pushd /pytorch
-if ! git checkout v${PYTORCH_BUILD_VERSION}; then
-    git checkout tags/v${PYTORCH_BUILD_VERSION}
-fi
+git clone https://github.com/pytorch/pytorch
+pushd pytorch
 git submodule update --init --recursive
 
 OLD_PATH=$PATH
