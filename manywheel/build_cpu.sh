@@ -11,7 +11,7 @@ yum install -y epel-release
 yum install -y cmake3
 yum remove -y cmake
 
-ln -s /usr/bin/cmake3 /usr/bin/cmake
+ln -sf /usr/bin/cmake3 /usr/bin/cmake
 
 rm -rf /usr/local/cuda*
 rm -rf /opt/python/cpython-2.6.9-ucs2  /opt/python/cpython-2.6.9-ucs4
@@ -23,8 +23,9 @@ ls /opt/python
 # # Compile wheels
 # #######################################################
 # clone pytorch source code
-git clone https://github.com/pytorch/pytorch
+git clone https://github.com/pytorch/pytorch || echo 'using existing clone'
 pushd pytorch
+git pull
 git submodule update --init --recursive
 
 OLD_PATH=$PATH
@@ -173,13 +174,14 @@ done
 mkdir -p /remote/$WHEELHOUSE_DIR
 cp /$WHEELHOUSE_DIR/torch*.whl /remote/$WHEELHOUSE_DIR/
 
-# remove stuff before testing
-rm -rf /opt/rh
-
-export OMP_NUM_THREADS=4 # on NUMA machines this takes too long
-pushd /pytorch/test
-for PYDIR in /opt/python/*; do
-    "${PYDIR}/bin/pip" uninstall -y torch
-    "${PYDIR}/bin/pip" install torch --no-index -f /$WHEELHOUSE_DIR
-    LD_LIBRARY_PATH="/usr/local/nvidia/lib64" PYCMD=$PYDIR/bin/python ./run_test.sh
-done
+# Removed by @fritzo
+# # remove stuff before testing
+# rm -rf /opt/rh
+# 
+# export OMP_NUM_THREADS=4 # on NUMA machines this takes too long
+# pushd pytorch/test
+# for PYDIR in /opt/python/*; do
+#     "${PYDIR}/bin/pip" uninstall -y torch
+#     "${PYDIR}/bin/pip" install torch --no-index -f /$WHEELHOUSE_DIR
+#     LD_LIBRARY_PATH="/usr/local/nvidia/lib64" PYCMD=$PYDIR/bin/python ./run_test.sh
+# done

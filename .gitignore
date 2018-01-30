@@ -67,3 +67,7 @@ conda/pytorch-src
 conda/torchvision-src
 wheel/pytorch-src
 wheel/torchvision-src
+
+manywheel/pytorch-whls-bkp/
+manywheel/pytorch/
+manywheel/wheelhousecpu/
