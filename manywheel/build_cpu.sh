@@ -27,6 +27,9 @@ git clone https://github.com/pytorch/pytorch || echo 'using existing clone'
 pushd pytorch
 git pull
 git submodule update --init --recursive
+if [ ! -z "${BUILD_COMMIT}" ]; then
+    git reset --hard ${BUILD_COMMIT}
+fi
 
 OLD_PATH=$PATH
 for PYDIR in /opt/python/*; do
@@ -34,7 +37,7 @@ for PYDIR in /opt/python/*; do
     python setup.py clean
     pip install -r requirements.txt
     pip install numpy==1.11
-    time python setup.py bdist_wheel -d $WHEELHOUSE_DIR
+    time VERBOSE=1 python setup.py bdist_wheel -d $WHEELHOUSE_DIR
 done
 
 popd
