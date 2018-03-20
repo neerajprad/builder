@@ -23,8 +23,8 @@ ls /opt/python
 # # Compile wheels
 # #######################################################
 # clone pytorch source code
-git clone https://github.com/pytorch/pytorch || echo 'using existing clone'
-pushd pytorch
+git clone https://github.com/pytorch/pytorch /pytorch || echo 'using existing clone'
+pushd /pytorch
 git pull
 git submodule update --init --recursive
 if [ ! -z "${BUILD_COMMIT}" ]; then

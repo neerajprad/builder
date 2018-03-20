@@ -1,40 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-if [ "$#" -ne 3 ]; then
-    echo "illegal number of parameters. Need PY_VERSION BUILD_VERSION BUILD_NUMBER"
-    echo "for example: build_wheel.sh 2 0.1.6 20"
-    exit 1
-fi
-
 PYTHON_VERSION=$1
-BUILD_VERSION=$2
-BUILD_NUMBER=$3
 
-echo "Building for Python: $PYTHON_VERSION Version: $BUILD_VERSION Build: $BUILD_NUMBER"
-
-export PYTORCH_BUILD_VERSION=$BUILD_VERSION
-export PYTORCH_BUILD_NUMBER=$BUILD_NUMBER
-
-if  [ $BUILD_NUMBER -eq 1 ]; then
-    BUILD_NUMBER_PREFIX=""
-else
-    BUILD_NUMBER_PREFIX=".post$BUILD_NUMBER"
-fi
-
-if [ $PYTHON_VERSION -eq 2 ]; then
-    WHEEL_FILENAME_GEN="torch-$BUILD_VERSION$BUILD_NUMBER_PREFIX-cp27-cp27m-macosx_10_6_x86_64.whl"
-    WHEEL_FILENAME_NEW="torch-$BUILD_VERSION$BUILD_NUMBER_PREFIX-cp27-none-macosx_10_6_x86_64.whl"
-elif [ $PYTHON_VERSION == "3.5" ]; then
-    WHEEL_FILENAME_GEN="torch-$BUILD_VERSION$BUILD_NUMBER_PREFIX-cp35-cp35m-macosx_10_6_x86_64.whl"
-    WHEEL_FILENAME_NEW="torch-$BUILD_VERSION$BUILD_NUMBER_PREFIX-cp35-cp35m-macosx_10_6_x86_64.whl"
-elif [ $PYTHON_VERSION == "3.6" ]; then
-    WHEEL_FILENAME_GEN="torch-$BUILD_VERSION$BUILD_NUMBER_PREFIX-cp36-cp36m-macosx_10_7_x86_64.whl"
-    WHEEL_FILENAME_NEW="torch-$BUILD_VERSION$BUILD_NUMBER_PREFIX-cp36-cp36m-macosx_10_7_x86_64.whl"
-else
-    echo "Unhandled python version: $PYTHON_VERSION"
-    exit 1
-fi
+echo "Building for Python: $PYTHON_VERSION Commit: $BUILD_COMMIT"
 
 echo "OSX. No CUDA/CUDNN"
 
@@ -90,23 +59,12 @@ export MACOSX_DEPLOYMENT_TARGET=10.10
 rm -rf pytorch-src
 git clone https://github.com/pytorch/pytorch pytorch-src
 pushd pytorch-src
-if ! git checkout v${BUILD_VERSION} ; then
-    git checkout tags/v${BUILD_VERSION}
-fi
 git submodule update --init --recursive
+if [ ! -z "${BUILD_COMMIT}" ]; then
+    git reset --hard ${BUILD_COMMIT}
+fi
 
 pip install -r requirements.txt || true
-python setup.py bdist_wheel
-
-pip uninstall -y torch || true
-pip uninstall -y torch || true
-
-pip install dist/$WHEEL_FILENAME_GEN
-cd test
-./run_test.sh
-cd ..
-
-echo "Wheel file: $WHEEL_FILENAME_GEN $WHEEL_FILENAME_NEW"
-cp dist/$WHEEL_FILENAME_GEN ../whl/$WHEEL_FILENAME_NEW
+MACOSX_DEPLOYMENT_TARGET=10.9 CC=clang CXX=clang++ python setup.py bdist_wheel -d ../whl/
 
 popd
